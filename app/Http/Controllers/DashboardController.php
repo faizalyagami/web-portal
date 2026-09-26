@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\UserType;
 use App\Models\System;
+use App\Models\User;
 
 class DashboardController extends Controller
 {
@@ -23,6 +24,7 @@ class DashboardController extends Controller
             'total' => $allSystems->count(),
             'accessible' => $systems->count(),
             'categories' => $systems->pluck('category')->unique()->count(),
+            'total_users' => User::where('is_active', true)->count(),
             'user_type_label' => $user->user_type->label(),
         ];
 

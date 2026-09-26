@@ -90,10 +90,10 @@
                     <div class="rounded-2xl p-4 border border-white/20"
                         style="background: rgba(255, 255, 255, 0.1) !important; backdrop-filter: blur(12px);">
                         <div class="text-2xl md:text-3xl font-bold" style="color: #ffffff !important;">
-                            24/7
+                            {{ number_format($stats['total_users']) }}
                         </div>
                         <div class="text-xs mt-1" style="color: rgba(255, 255, 255, 0.8) !important;">
-                            Layanan Online
+                            Total Pengguna
                         </div>
                     </div>
                 </div>
