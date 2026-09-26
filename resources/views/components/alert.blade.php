@@ -3,12 +3,13 @@
 @php
     $styles = [
         'success' =>
-            'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800 text-green-700 dark:text-green-400',
-        'error' => 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800 text-red-700 dark:text-red-400',
+            'background: rgba(0, 167, 156, 0.08) !important; border: 1px solid rgba(0, 167, 156, 0.25); color: #00847c !important;',
+        'error' =>
+            'background: rgba(239, 68, 68, 0.08) !important; border: 1px solid rgba(239, 68, 68, 0.25); color: #dc2626 !important;',
         'warning' =>
-            'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800 text-yellow-700 dark:text-yellow-400',
+            'background: rgba(246, 147, 32, 0.08) !important; border: 1px solid rgba(246, 147, 32, 0.25); color: #b8690a !important;',
         'info' =>
-            'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-400',
+            'background: rgba(107, 86, 165, 0.08) !important; border: 1px solid rgba(107, 86, 165, 0.25); color: #6B56A5 !important;',
     ];
 
     $icons = [
@@ -19,7 +20,7 @@
     ];
 @endphp
 
-<div {{ $attributes->merge(['class' => "flex items-start gap-3 p-4 rounded-xl border {$styles[$type]}"]) }}>
+<div {{ $attributes->merge(['class' => 'flex items-start gap-3 p-4 rounded-xl']) }} style="{{ $styles[$type] }}">
     <x-dynamic-component :component="'heroicon-o-' . $icons[$type]" class="w-5 h-5 flex-shrink-0 mt-0.5" />
     <div class="text-sm font-medium flex-1">{{ $slot }}</div>
 </div>

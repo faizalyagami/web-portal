@@ -72,28 +72,27 @@
         </div>
 
         <div class="grid md:grid-cols-2 gap-4 mt-4">
-            <label
-                class="flex items-center gap-3 cursor-pointer p-3 rounded-xl border border-gray-200 dark:border-gray-700">
+            <label class="flex items-center gap-3 cursor-pointer p-3 rounded-xl border transition"
+                style="border-color: #e5e7eb !important;">
                 <input type="hidden" name="is_active" value="0">
                 <input type="checkbox" name="is_active" value="1"
-                    {{ old('is_active', $user->is_active ?? true) ? 'checked' : '' }}
-                    class="w-4 h-4 rounded text-[#0d7a3f] focus:ring-[#0d7a3f]">
+                    {{ old('is_active', $user->is_active ?? true) ? 'checked' : '' }} style="accent-color: #6B56A5;">
                 <div>
-                    <div class="text-sm font-semibold text-gray-800 dark:text-white">Akun Aktif</div>
-                    <div class="text-xs text-gray-500">User bisa login ke portal</div>
+                    <div class="text-sm font-semibold" style="color: #1f2937 !important;">Akun Aktif</div>
+                    <div class="text-xs" style="color: #9ca3af !important;">User bisa login ke portal</div>
                 </div>
             </label>
 
             @if (auth()->user()->is_super_admin)
-                <label
-                    class="flex items-center gap-3 cursor-pointer p-3 rounded-xl border border-gray-200 dark:border-gray-700">
+                <label class="flex items-center gap-3 cursor-pointer p-3 rounded-xl border transition"
+                    style="border-color: #e5e7eb !important;">
                     <input type="hidden" name="is_super_admin" value="0">
                     <input type="checkbox" name="is_super_admin" value="1"
                         {{ old('is_super_admin', $user->is_super_admin ?? false) ? 'checked' : '' }}
-                        class="w-4 h-4 rounded text-purple-600 focus:ring-purple-500">
+                        style="accent-color: #6B56A5;">
                     <div>
-                        <div class="text-sm font-semibold text-gray-800 dark:text-white">Super Admin</div>
-                        <div class="text-xs text-gray-500">Akses penuh semua sistem</div>
+                        <div class="text-sm font-semibold" style="color: #1f2937 !important;">Super Admin</div>
+                        <div class="text-xs" style="color: #9ca3af !important;">Akses penuh semua sistem</div>
                     </div>
                 </label>
             @endif

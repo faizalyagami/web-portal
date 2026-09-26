@@ -1,15 +1,17 @@
 @props(['title' => null, 'subtitle' => null, 'padding' => 'p-6'])
 
-<div
-    {{ $attributes->merge(['class' => 'bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm']) }}>
+<div {{ $attributes->merge(['class' => 'bg-white rounded-2xl border border-gray-100']) }}
+    style="box-shadow: 0 1px 3px rgba(0,0,0,0.04) !important;">
+
     @if ($title)
-        <div class="px-6 py-4 border-b border-gray-100 dark:border-gray-700">
-            <h3 class="font-bold text-gray-800 dark:text-white">{{ $title }}</h3>
+        <div class="px-6 py-4 border-b border-gray-100">
+            <h3 class="font-bold" style="color: #1f2937 !important;">{{ $title }}</h3>
             @if ($subtitle)
-                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ $subtitle }}</p>
+                <p class="text-sm mt-1" style="color: #9ca3af !important;">{{ $subtitle }}</p>
             @endif
         </div>
     @endif
+
     <div class="{{ $padding }}">
         {{ $slot }}
     </div>
