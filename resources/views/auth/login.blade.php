@@ -375,7 +375,7 @@
                 class="h-16 md:h-20 w-auto object-contain mx-auto mb-2">
 
             <p class="text-xs font-semibold tracking-widest" style="color: #9ca3af;">
-                PORTAL SISTEM TERPADU
+                PORTAL SISTEM INFORMASI FAKULTAS PSIKOLOGI UNISBA
             </p>
         </div>
 
@@ -383,10 +383,10 @@
         <div class="text-center mb-6 fade-in d1">
             <div class="badge mb-4">
                 <span class="badge-dot"></span>
-                SISTEM TERPADU
+                SISTEM INFORMASI FAPSI
             </div>
             <h2 class="text-lg font-bold mb-1" style="color: #1f2937;">
-                Selamat Datang 👋
+                Assalamu'alaikum
             </h2>
             <p class="text-xs" style="color: #9ca3af;">
                 Silakan masuk untuk melanjutkan
@@ -416,7 +416,7 @@
             @csrf
 
             <div class="mb-4 fade-in d2">
-                <label for="login" class="input-label">Email / NPM / NIDN / NIK</label>
+                <label for="login" class="input-label">Email / NPM / NIK</label>
                 <div class="relative">
                     <div class="input-icon">
                         <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"

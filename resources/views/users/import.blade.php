@@ -23,12 +23,14 @@
                     </p>
                 </div>
 
-                <a href="{{ route('users.import.template') }}"
+                <button type="button" onclick="downloadTemplate()"
                     class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition"
-                    style="background: rgba(0, 167, 156, 0.1) !important; color: #00847c !important; border: 1px solid rgba(0, 167, 156, 0.25);">
+                    style="background: rgba(0, 167, 156, 0.1) !important; color: #00847c !important; border: 1px solid rgba(0, 167, 156, 0.25);"
+                    onmouseover="this.style.background='rgba(0, 167, 156, 0.15)'"
+                    onmouseout="this.style.background='rgba(0, 167, 156, 0.1)'">
                     <x-heroicon-o-arrow-down-tray class="w-4 h-4" />
                     Download Template
-                </a>
+                </button>
             </div>
         </div>
 
@@ -169,8 +171,8 @@
                             </p>
                         </div>
 
-                        <input type="file" id="file" name="file" accept=".xlsx,.xls,.csv" required class="hidden"
-                            onchange="updateFileName(this)">
+                        <input type="file" id="file" name="file" accept=".xlsx,.xls,.csv" required
+                            class="hidden" onchange="updateFileName(this)">
                     </label>
 
                     {{-- File Preview --}}
@@ -326,6 +328,19 @@
             const preview = document.getElementById('filePreview');
             input.value = '';
             preview.classList.add('hidden');
+        }
+
+        function downloadTemplate() {
+            const type = document.getElementById('user_type').value;
+
+            if (!type) {
+                alert('Silakan pilih Tipe User terlebih dahulu, lalu klik Download Template.');
+                document.getElementById('user_type').focus();
+                return;
+            }
+
+            // Redirect ke route download
+            window.location.href = `{{ route('users.import.template') }}?type=${type}`;
         }
     </script>
 @endpush

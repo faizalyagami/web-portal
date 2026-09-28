@@ -48,8 +48,8 @@
                 </div>
 
                 {{-- H1 --}}
-                <h1 class="text-3xl md:text-5xl font-extrabold mb-3 leading-tight" style="color: #ffffff !important;">
-                    Assalamu'alaikum,<br class="md:hidden"> {{ explode(' ', auth()->user()->name)[0] }}! 👋
+                <h1 class="text-3xl md:text-3xl font-extrabold mb-3 leading-tight" style="color: #ffffff !important;">
+                    Assalamu'alaikum,<br class="md:hidden"> {{ auth()->user()->name }}
                 </h1>
 
                 {{-- Description --}}

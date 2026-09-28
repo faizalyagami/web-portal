@@ -165,8 +165,58 @@ class UserManagementController extends Controller
 
     public function downloadTemplate(Request $request)
     {
-        // TODO: Generate template Excel
-        return back()->with('info', 'Template akan segera tersedia.');
+        $type = $request->input('type', 'mahasiswa');
+
+        // Tentukan kolom sesuai tipe user
+        $columns = match ($type) {
+            'mahasiswa' => ['name', 'email', 'identifier', 'fakultas', 'program_studi', 'angkatan'],
+            'dosen'     => ['name', 'email', 'nidn', 'fakultas', 'program_studi', 'jabatan'],
+            'staff'     => ['name', 'email', 'nik', 'fakultas', 'jabatan'],
+            'admin'     => ['name', 'email', 'identifier', 'jabatan'],
+            default     => ['name', 'email', 'identifier', 'fakultas', 'program_studi', 'jabatan'],
+        };
+
+        // Contoh data
+        $example = match ($type) {
+            'mahasiswa' => ['Ahmad Fauzi', 'ahmad.fauzi@student.unisba.ac.id', '10012345', 'Psikologi', 'Psikologi', '2021'],
+            'dosen'     => ['Dr. Rina Marlina, M.Psi.', 'rina.marlina@unisba.ac.id', '0412345678', 'Psikologi', 'Psikologi', 'Lektor Kepala'],
+            'staff'     => ['Dewi Lestari, S.Kom.', 'dewi.lestari@unisba.ac.id', '3273012345670001', 'Psikologi', 'Staf Akademik'],
+            'admin'     => ['Administrator', 'admin@unisba.ac.id', 'ADMIN-001', 'Kepala PSITEK'],
+            default     => ['Nama Lengkap', 'email@unisba.ac.id', '12345678', 'Psikologi', 'Psikologi', 'Jabatan'],
+        };
+
+        // Nama file
+        $filename = "template-import-{$type}-" . date('Y-m-d') . ".csv";
+
+        // Header untuk download
+        $headers = [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
+            'Pragma' => 'no-cache',
+            'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
+            'Expires' => '0',
+        ];
+
+        // Callback untuk generate CSV
+        $callback = function () use ($columns, $example) {
+            $file = fopen('php://output', 'w');
+
+            // Tambahkan BOM agar Excel bisa baca UTF-8 dengan benar
+            fprintf($file, chr(0xEF) . chr(0xBB) . chr(0xBF));
+
+            // Baris header
+            fputcsv($file, $columns, ';');
+
+            // Baris contoh data
+            fputcsv($file, $example, ';');
+
+            // Baris kosong (untuk user mengisi data di bawahnya)
+            fputcsv($file, array_fill(0, count($columns), ''), ';');
+
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
     }
 
     protected function validateUser(Request $request, ?int $ignoreId = null): array
