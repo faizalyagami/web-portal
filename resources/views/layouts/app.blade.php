@@ -63,7 +63,8 @@
     {{-- ============================================ --}}
     {{-- TOP NAVBAR --}}
     {{-- ============================================ --}}
-    <nav class="sticky top-0 z-50 bg-white border-b border-gray-100 shadow-sm">
+    <nav class="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-100 shadow-sm"
+        style="background: #ffffff !important;">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16">
 
@@ -207,6 +208,7 @@
     {{-- ============================================ --}}
     {{-- MAIN CONTENT --}}
     {{-- ============================================ --}}
+    <div class="h-16"></div>
     <main class="pattern-islamic flex-1">
         @yield('content')
     </main>

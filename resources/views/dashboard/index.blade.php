@@ -8,7 +8,7 @@
         {{-- ============================================ --}}
         {{-- HERO SECTION --}}
         {{-- ============================================ --}}
-        <div class="relative overflow-hidden rounded-3xl p-8 md:p-12 mb-10 shadow-xl"
+        <div class="relative overflow-hidden rounded-2xl p-5 md:p-7 mb-6 shadow-lg"
             style="background: linear-gradient(135deg, #6B56A5 0%, #56438a 60%, #3d2f6b 100%) !important;">
 
             {{-- Decorative circles --}}
@@ -22,17 +22,17 @@
 
             <div class="relative z-10">
                 {{-- Badges --}}
-                <div class="flex flex-wrap items-center gap-2 mb-4">
-                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold shadow-md"
+                <div class="flex flex-wrap items-center gap-1.5 mb-2.5">
+                    <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold shadow-sm"
                         style="background: #F69320 !important; color: #ffffff !important;">
-                        <span class="w-2 h-2 rounded-full bg-white animate-pulse"></span>
+                        <span class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>
                         SISTEM TERPADU
                     </div>
 
                     @php $typeColor = auth()->user()->user_type->badgeColor(); @endphp
-                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold border border-white/25"
+                    <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-semibold border border-white/25"
                         style="background: {{ $typeColor }}80 !important; color: #ffffff !important; backdrop-filter: blur(8px);">
-                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                         </svg>
@@ -40,7 +40,7 @@
                     </div>
 
                     @if (auth()->user()->identifier)
-                        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold border border-white/25"
+                        <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-semibold border border-white/25"
                             style="background: rgba(255, 255, 255, 0.1) !important; color: #ffffff !important; backdrop-filter: blur(8px);">
                             {{ auth()->user()->identifier_label }}: {{ auth()->user()->identifier }}
                         </div>
@@ -48,51 +48,54 @@
                 </div>
 
                 {{-- H1 --}}
-                <h1 class="text-3xl md:text-3xl font-extrabold mb-3 leading-tight" style="color: #ffffff !important;">
-                    Assalamu'alaikum,<br class="md:hidden"> {{ auth()->user()->name }}
+                <h1 class="text-xl md:text-2xl font-extrabold mb-1.5 leading-tight" style="color: #ffffff !important;">
+                    Assalamu'alaikum, {{ auth()->user()->name }} 👋
                 </h1>
 
                 {{-- Description --}}
-                <p class="text-base md:text-lg max-w-2xl leading-relaxed"
-                    style="color: rgba(255, 255, 255, 0.9) !important;">
+                <p class="text-xs md:text-sm max-w-2xl leading-relaxed"
+                    style="color: rgba(255, 255, 255, 0.85) !important;">
                     Akses semua sistem informasi Fakultas Psikologi Universitas Islam Bandung dalam satu portal terpadu.
                 </p>
 
                 {{-- Stats --}}
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mt-8">
-                    <div class="rounded-2xl p-4 border border-white/20"
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3 mt-4">
+                    <div class="rounded-xl px-3 py-2 border border-white/20"
                         style="background: rgba(255, 255, 255, 0.1) !important; backdrop-filter: blur(12px);">
-                        <div class="text-2xl md:text-3xl font-bold" style="color: #ffffff !important;">
+                        <div class="text-lg md:text-xl font-bold leading-none" style="color: #ffffff !important;">
                             {{ $stats['total'] }}
                         </div>
-                        <div class="text-xs mt-1" style="color: rgba(255, 255, 255, 0.8) !important;">
+                        <div class="text-[10px] mt-1" style="color: rgba(255, 255, 255, 0.75) !important;">
                             Total Sistem
                         </div>
                     </div>
-                    <div class="rounded-2xl p-4 border border-white/20"
+
+                    <div class="rounded-xl px-3 py-2 border border-white/20"
                         style="background: rgba(255, 255, 255, 0.1) !important; backdrop-filter: blur(12px);">
-                        <div class="text-2xl md:text-3xl font-bold" style="color: #ffffff !important;">
+                        <div class="text-lg md:text-xl font-bold leading-none" style="color: #ffffff !important;">
                             {{ $stats['accessible'] }}
                         </div>
-                        <div class="text-xs mt-1" style="color: rgba(255, 255, 255, 0.8) !important;">
+                        <div class="text-[10px] mt-1" style="color: rgba(255, 255, 255, 0.75) !important;">
                             Akses Anda
                         </div>
                     </div>
-                    <div class="rounded-2xl p-4 border border-white/20"
+
+                    <div class="rounded-xl px-3 py-2 border border-white/20"
                         style="background: rgba(255, 255, 255, 0.1) !important; backdrop-filter: blur(12px);">
-                        <div class="text-2xl md:text-3xl font-bold" style="color: #ffffff !important;">
+                        <div class="text-lg md:text-xl font-bold leading-none" style="color: #ffffff !important;">
                             {{ $stats['categories'] }}
                         </div>
-                        <div class="text-xs mt-1" style="color: rgba(255, 255, 255, 0.8) !important;">
+                        <div class="text-[10px] mt-1" style="color: rgba(255, 255, 255, 0.75) !important;">
                             Kategori
                         </div>
                     </div>
-                    <div class="rounded-2xl p-4 border border-white/20"
+
+                    <div class="rounded-xl px-3 py-2 border border-white/20"
                         style="background: rgba(255, 255, 255, 0.1) !important; backdrop-filter: blur(12px);">
-                        <div class="text-2xl md:text-3xl font-bold" style="color: #ffffff !important;">
+                        <div class="text-lg md:text-xl font-bold leading-none" style="color: #ffffff !important;">
                             {{ number_format($stats['total_users']) }}
                         </div>
-                        <div class="text-xs mt-1" style="color: rgba(255, 255, 255, 0.8) !important;">
+                        <div class="text-[10px] mt-1" style="color: rgba(255, 255, 255, 0.75) !important;">
                             Total Pengguna
                         </div>
                     </div>
