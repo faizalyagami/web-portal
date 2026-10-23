@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Enums\UserType;
+use App\Exports\UserTemplateExport;
+use App\Imports\UsersImport;
 use App\Models\ActivityLog;
 use App\Models\System;
 use App\Models\User;
@@ -12,6 +14,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
+use Maatwebsite\Excel\Facades\Excel;
 
 class UserManagementController extends Controller
 {
@@ -153,70 +156,40 @@ class UserManagementController extends Controller
 
     public function import(Request $request): RedirectResponse
     {
-        // Placeholder - implementasi dengan Laravel Excel
         $request->validate([
             'file' => ['required', 'file', 'mimes:xlsx,xls,csv', 'max:5120'],
             'user_type' => ['required', Rule::enum(UserType::class)],
         ]);
 
-        // TODO: Implementasi dengan maatwebsite/excel
-        return back()->with('success', 'Import berhasil diproses.');
+        $import = new UsersImport($request->user_type);
+
+        try {
+            Excel::import($import, $request->file('file'));
+
+            $success = $import->getSuccessCount();
+            $failed = $import->getFailedCount();
+            $errors = $import->getErrors();
+
+            if ($failed > 0) {
+                $errorMsg = "{$success} user berhasil diimport. {$failed} gagal: <br>" . implode('<br>', array_slice($errors, 0, 5));
+                if (count($errors) > 5) $errorMsg .= '<br>...dan lainnya.';
+
+                return redirect()->route('users.index')->with('error', $errorMsg);
+            }
+
+            return redirect()->route('users.index')
+                ->with('success', "{$success} user berhasil diimport.");
+        } catch (\Exception $e) {
+            return back()->with('error', 'Gagal memproses file: ' . $e->getMessage());
+        }
     }
 
     public function downloadTemplate(Request $request)
     {
         $type = $request->input('type', 'mahasiswa');
+        $filename = "template-import-{$type}-" . date('Y-m-d') . ".xlsx";
 
-        // Tentukan kolom sesuai tipe user
-        $columns = match ($type) {
-            'mahasiswa' => ['name', 'email', 'identifier', 'fakultas', 'program_studi', 'angkatan'],
-            'dosen'     => ['name', 'email', 'nidn', 'fakultas', 'program_studi', 'jabatan'],
-            'staff'     => ['name', 'email', 'nik', 'fakultas', 'jabatan'],
-            'admin'     => ['name', 'email', 'identifier', 'jabatan'],
-            default     => ['name', 'email', 'identifier', 'fakultas', 'program_studi', 'jabatan'],
-        };
-
-        // Contoh data
-        $example = match ($type) {
-            'mahasiswa' => ['Ahmad Fauzi', 'ahmad.fauzi@student.unisba.ac.id', '10012345', 'Psikologi', 'Psikologi', '2021'],
-            'dosen'     => ['Dr. Rina Marlina, M.Psi.', 'rina.marlina@unisba.ac.id', '0412345678', 'Psikologi', 'Psikologi', 'Lektor Kepala'],
-            'staff'     => ['Dewi Lestari, S.Kom.', 'dewi.lestari@unisba.ac.id', '3273012345670001', 'Psikologi', 'Staf Akademik'],
-            'admin'     => ['Administrator', 'admin@unisba.ac.id', 'ADMIN-001', 'Kepala PSITEK'],
-            default     => ['Nama Lengkap', 'email@unisba.ac.id', '12345678', 'Psikologi', 'Psikologi', 'Jabatan'],
-        };
-
-        // Nama file
-        $filename = "template-import-{$type}-" . date('Y-m-d') . ".csv";
-
-        // Header untuk download
-        $headers = [
-            'Content-Type' => 'text/csv; charset=UTF-8',
-            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
-            'Pragma' => 'no-cache',
-            'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
-            'Expires' => '0',
-        ];
-
-        // Callback untuk generate CSV
-        $callback = function () use ($columns, $example) {
-            $file = fopen('php://output', 'w');
-
-            // Tambahkan BOM agar Excel bisa baca UTF-8 dengan benar
-            fprintf($file, chr(0xEF) . chr(0xBB) . chr(0xBF));
-
-            // Baris header
-            fputcsv($file, $columns, ';');
-
-            // Baris contoh data
-            fputcsv($file, $example, ';');
-
-            // Baris kosong (untuk user mengisi data di bawahnya)
-            fputcsv($file, array_fill(0, count($columns), ''), ';');
-
-            fclose($file);
-        };
-
-        return response()->stream($callback, 200, $headers);
+        return Excel::download(new UserTemplateExport($type), $filename);
     }
 
     protected function validateUser(Request $request, ?int $ignoreId = null): array
@@ -240,10 +213,12 @@ class UserManagementController extends Controller
 
         // Sinkronisasi identifier dengan nidn/nik
         $type = $validated['user_type'];
-        if ($type === 'dosen' && !empty($validated['nidn'])) {
-            $validated['identifier'] = $validated['nidn'];
-        } elseif ($type === 'staff' && !empty($validated['nik'])) {
+        if (($type === 'dosen' || $type === 'staff') && !empty($validated['nik'])) {
             $validated['identifier'] = $validated['nik'];
+        }
+
+        if ($type === 'dosen') {
+            $validated['nidn'] = null;
         }
 
         return $validated;

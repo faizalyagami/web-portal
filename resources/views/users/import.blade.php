@@ -110,7 +110,7 @@
                 </p>
             </div>
 
-            <form method="POST" action="{{ route('users.import') }}" enctype="multipart/form-data" class="p-6 space-y-5">
+            <form method="POST" action="{{ route('users.import') }}" enctype="multipart/form-data" class="p-6 space-y-8">
                 @csrf
 
                 {{-- Tipe User --}}
@@ -147,58 +147,66 @@
 
                 {{-- Upload File --}}
                 <div>
-                    <label for="file" class="block text-sm font-semibold mb-2" style="color: #1f2937 !important;">
+                    <label for="file" class="block text-sm font-semibold mb-3" style="color: #1f2937 !important;">
                         File Excel / CSV <span style="color: #dc2626;">*</span>
                     </label>
 
-                    <label for="file"
-                        class="relative flex flex-col items-center justify-center w-full px-6 py-10 rounded-2xl cursor-pointer transition-all group"
-                        style="background: #f9fafb !important; border: 2px dashed #e5e7eb !important;"
+                    {{-- Dropzone Area --}}
+                    <label for="file" id="dropzone"
+                        class="relative flex flex-col items-center justify-center w-full px-6 py-12 rounded-2xl cursor-pointer transition-all duration-300 group border-2 border-dashed"
+                        style="background: #f9fafb !important; border-color: #e5e7eb !important;"
                         onmouseover="this.style.borderColor='#6B56A5'; this.style.background='rgba(107, 86, 165, 0.03)';"
                         onmouseout="this.style.borderColor='#e5e7eb'; this.style.background='#f9fafb';">
 
-                        <div class="w-14 h-14 rounded-2xl flex items-center justify-center mb-3 transition group-hover:scale-110"
+                        <div class="w-16 h-16 rounded-2xl flex items-center justify-center mb-4 transition-transform duration-300 group-hover:scale-110 group-hover:-translate-y-1 shadow-lg"
                             style="background: linear-gradient(135deg, #6B56A5, #56438a) !important;">
-                            <x-heroicon-o-cloud-arrow-up class="w-7 h-7 text-white" />
+                            <x-heroicon-o-cloud-arrow-up class="w-8 h-8 text-white" />
                         </div>
 
                         <div class="text-center">
-                            <p class="text-sm font-semibold mb-1" style="color: #1f2937 !important;">
-                                <span style="color: #6B56A5 !important;">Klik untuk upload</span> atau drag & drop
+                            <p class="text-sm font-bold mb-1" style="color: #1f2937 !important;">
+                                <span style="color: #6B56A5 !important;">Klik untuk upload</span> atau drag & drop file
                             </p>
-                            <p class="text-xs" style="color: #9ca3af !important;">
+                            <p class="text-xs mt-2 font-medium px-3 py-1 rounded-full inline-block"
+                                style="background: rgba(107, 114, 128, 0.08) !important; color: #6b7280 !important;">
                                 XLSX, XLS, CSV · Maksimal 5 MB
                             </p>
                         </div>
 
                         <input type="file" id="file" name="file" accept=".xlsx,.xls,.csv" required
-                            class="hidden" onchange="updateFileName(this)">
+                            class="hidden" onchange="handleFileSelect(this)">
                     </label>
 
-                    {{-- File Preview --}}
-                    <div id="filePreview" class="hidden mt-3 p-3 rounded-xl flex items-center gap-3"
-                        style="background: rgba(0, 167, 156, 0.06) !important; border: 1px solid rgba(0, 167, 156, 0.2);">
-                        <div class="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
-                            style="background: #00A79C !important;">
-                            <x-heroicon-o-document-text class="w-5 h-5 text-white" />
+                    {{-- File Preview Card --}}
+                    <div id="filePreview"
+                        class="hidden mt-3 p-4 rounded-xl flex items-center justify-between gap-4 transition-all"
+                        style="background: #ffffff !important; border: 1.5px solid #e5e7eb; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
+
+                        <div class="flex items-center gap-4 min-w-0">
+                            <div class="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
+                                style="background: rgba(0, 167, 156, 0.1) !important;">
+                                <x-heroicon-o-document-text class="w-6 h-6" style="color: #00A79C !important;" />
+                            </div>
+                            <div class="min-w-0">
+                                <div id="fileName" class="text-sm font-bold truncate"
+                                    style="color: #1f2937 !important;"></div>
+                                <div id="fileSize" class="text-xs mt-0.5" style="color: #9ca3af !important;"></div>
+                            </div>
                         </div>
-                        <div class="flex-1 min-w-0">
-                            <div id="fileName" class="text-sm font-semibold truncate"
-                                style="color: #1f2937 !important;"></div>
-                            <div id="fileSize" class="text-xs" style="color: #9ca3af !important;"></div>
-                        </div>
-                        <button type="button" onclick="clearFile()" class="p-1.5 rounded-lg transition"
-                            style="color: #dc2626 !important;"
-                            onmouseover="this.style.background='rgba(239, 68, 68, 0.1)'"
-                            onmouseout="this.style.background='transparent'">
+
+                        <button type="button" onclick="clearFile(event)" class="p-2 rounded-lg transition flex-shrink-0"
+                            style="color: #dc2626 !important; background: rgba(239, 68, 68, 0.1);"
+                            onmouseover="this.style.background='rgba(239, 68, 68, 0.2)'"
+                            onmouseout="this.style.background='rgba(239, 68, 68, 0.1)'">
                             <x-heroicon-o-x-mark class="w-5 h-5" />
                         </button>
                     </div>
 
                     @error('file')
-                        <p class="text-xs mt-1.5" style="color: #dc2626 !important;">{{ $message }}</p>
+                        <p class="text-xs mt-2 font-medium" style="color: #dc2626 !important;">{{ $message }}</p>
                     @enderror
                 </div>
+
 
                 {{-- Actions --}}
                 <div class="flex flex-col sm:flex-row justify-end gap-2 pt-4 border-t border-gray-100">
@@ -304,7 +312,55 @@
 
 @push('scripts')
     <script>
-        function updateFileName(input) {
+        // --- Fitur Drag & Drop ---
+        document.addEventListener("DOMContentLoaded", function() {
+            const dropzone = document.getElementById('dropzone');
+            const fileInput = document.getElementById('file');
+
+            if (dropzone && fileInput) {
+                ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                    dropzone.addEventListener(eventName, preventDefaults, false);
+                });
+
+                function preventDefaults(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+
+                ['dragenter', 'dragover'].forEach(eventName => {
+                    dropzone.addEventListener(eventName, highlight, false);
+                });
+
+                ['dragleave', 'drop'].forEach(eventName => {
+                    dropzone.addEventListener(eventName, unhighlight, false);
+                });
+
+                function highlight(e) {
+                    dropzone.style.borderColor = '#6B56A5';
+                    dropzone.style.background = 'rgba(107, 86, 165, 0.05)';
+                }
+
+                function unhighlight(e) {
+                    dropzone.style.borderColor = '#e5e7eb';
+                    dropzone.style.background = '#f9fafb';
+                }
+
+                // Handle Drop
+                dropzone.addEventListener('drop', handleDrop, false);
+
+                function handleDrop(e) {
+                    let dt = e.dataTransfer;
+                    let files = dt.files;
+                    if (files.length > 0) {
+                        fileInput.files = files;
+                        handleFileSelect(fileInput);
+                    }
+                }
+            }
+        });
+
+        // --- Fitur Tampilkan File ---
+        function handleFileSelect(input) {
             const preview = document.getElementById('filePreview');
             const nameEl = document.getElementById('fileName');
             const sizeEl = document.getElementById('fileSize');
@@ -323,13 +379,22 @@
             }
         }
 
-        function clearFile() {
+        // --- Fitur Hapus File ---
+        function clearFile(event) {
+            // Mencegah form langsung tersubmit saat tombol hapus diklik
+            if (event) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+
             const input = document.getElementById('file');
             const preview = document.getElementById('filePreview');
+
             input.value = '';
             preview.classList.add('hidden');
         }
 
+        // --- Fungsi Download Template ---
         function downloadTemplate() {
             const type = document.getElementById('user_type').value;
 
@@ -339,7 +404,6 @@
                 return;
             }
 
-            // Redirect ke route download
             window.location.href = `{{ route('users.import.template') }}?type=${type}`;
         }
     </script>

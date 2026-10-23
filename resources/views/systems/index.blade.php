@@ -38,6 +38,23 @@
                             <x-dynamic-component :component="'heroicon-o-' . $system->icon" class="w-6 h-6 text-white" />
                         </div>
 
+                        @if ($system->is_maintenance)
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase"
+                                style="background: rgba(239, 68, 68, 0.15) !important; color: #dc2626 !important;">
+                                Maintenance
+                            </span>
+                        @elseif ($system->is_active)
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase"
+                                style="background: rgba(0, 167, 156, 0.15) !important; color: #00A79C !important;">
+                                Aktif
+                            </span>
+                        @else
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase"
+                                style="background: rgba(107, 114, 128, 0.15) !important; color: #6b7280 !important;">
+                                Nonaktif
+                            </span>
+                        @endif
+
                         @if ($system->is_active)
                             <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase"
                                 style="background: rgba(0, 167, 156, 0.15) !important; color: #00A79C !important;">

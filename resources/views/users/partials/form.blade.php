@@ -31,10 +31,10 @@
                     hint="Nomor Pokok Mahasiswa" />
             </div>
             <div x-show="userType === 'dosen'">
-                <x-input name="nidn" label="NIDN" :value="$user->nidn ?? ''" placeholder="0412345678" />
+                <x-input name="nik" label="NIK" :value="$user->nik ?? ''" placeholder="D000329" />
             </div>
             <div x-show="userType === 'staff'">
-                <x-input name="nik" label="NIK" :value="$user->nik ?? ''" placeholder="3273012345670001" />
+                <x-input name="nik" label="NIK" :value="$user->nik ?? ''" placeholder="A210472" />
             </div>
             <div x-show="userType === 'admin'">
                 <x-input name="identifier" label="ID Admin" :value="$user->identifier ?? ''" placeholder="ADMIN-001" />

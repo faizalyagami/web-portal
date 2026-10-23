@@ -79,6 +79,7 @@ class SystemManagementController extends Controller
             'allowed_types.*' => ['string'],
             'is_active' => ['boolean'],
             'order' => ['nullable', 'integer'],
+            'is_maintenance' => ['boolean']
         ]);
     }
 }
