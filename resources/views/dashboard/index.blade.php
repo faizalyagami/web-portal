@@ -159,45 +159,62 @@
         {{-- ============================================ --}}
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5" id="systemGrid">
             @foreach ($systems as $system)
-                <a href="{{ $system->url }}" target="_blank" data-category="{{ $system->category }}"
-                    data-name="{{ strtolower($system->name . ' ' . $system->description) }}"
-                    class="system-card group relative bg-white rounded-2xl p-6 border border-gray-100 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl overflow-hidden"
-                    style="background: #ffffff !important; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
+                {{-- LOGIKA MAINTENANCE: Jika maintenance, ubah tag <a> jadi <div> agar tidak bisa diklik --}}
+                @if ($system->is_maintenance)
+                    <div data-category="{{ $system->category }}"
+                        data-name="{{ strtolower($system->name . ' ' . $system->description) }}"
+                        class="system-card group relative bg-gray-100 rounded-2xl p-6 border border-gray-200 overflow-hidden cursor-not-allowed opacity-75 grayscale"
+                        style="box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
+                    @else
+                        <a href="{{ $system->url }}" target="_blank" data-category="{{ $system->category }}"
+                            data-name="{{ strtolower($system->name . ' ' . $system->description) }}"
+                            class="system-card group relative bg-white rounded-2xl p-6 border border-gray-100 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl overflow-hidden"
+                            style="background: #ffffff !important; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
+                @endif
 
-                    {{-- Accent gradient circle --}}
-                    <div class="absolute top-0 right-0 w-32 h-32 rounded-full opacity-10 group-hover:opacity-20 transition-opacity -mr-16 -mt-16"
-                        style="background: {{ $system->color }}"></div>
+                {{-- Accent gradient circle (jika maintenance, warnanya abu) --}}
+                <div class="absolute top-0 right-0 w-32 h-32 rounded-full opacity-10 {{ $system->is_maintenance ? '' : 'group-hover:opacity-20' }} transition-opacity -mr-16 -mt-16"
+                    style="background: {{ $system->is_maintenance ? '#9ca3af' : $system->color }}"></div>
 
-                    <div class="relative">
-                        {{-- Icon --}}
-                        <div class="w-14 h-14 rounded-2xl flex items-center justify-center mb-4 shadow-md group-hover:scale-110 transition-transform"
-                            style="background: linear-gradient(135deg, {{ $system->color }} 0%, {{ $system->color }}cc 100%);">
-                            <x-dynamic-component :component="'heroicon-o-' . $system->icon" class="w-7 h-7 text-white" />
-                        </div>
+                <div class="relative">
+                    {{-- Icon --}}
+                    <div class="w-14 h-14 rounded-2xl flex items-center justify-center mb-4 shadow-md {{ $system->is_maintenance ? '' : 'group-hover:scale-110' }} transition-transform"
+                        style="background: linear-gradient(135deg, {{ $system->is_maintenance ? '#9ca3af' : $system->color }} 0%, {{ $system->is_maintenance ? '#9ca3af' : $system->color }}cc 100%);">
+                        <x-dynamic-component :component="'heroicon-o-' . $system->icon" class="w-7 h-7 text-white" />
+                    </div>
 
-                        {{-- Category Badge --}}
-                        <span
-                            class="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider mb-2"
-                            style="background: {{ $system->color }}15; color: {{ $system->color }} !important;">
-                            {{ $system->category }}
+                    {{-- Category Badge --}}
+                    <span
+                        class="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider mb-2"
+                        style="background: {{ $system->is_maintenance ? '#9ca3af15' : $system->color . '15' }}; color: {{ $system->is_maintenance ? '#6b7280' : $system->color }} !important;">
+                        {{ $system->category }}
+                    </span>
+
+                    {{-- Title --}}
+                    <h3 class="text-lg font-bold mb-2 transition {{ $system->is_maintenance ? 'text-gray-600' : 'group-hover:opacity-80' }}"
+                        style="color: {{ $system->is_maintenance ? '#6b7280' : '#1f2937' }} !important;">
+                        {{ $system->name }}
+                    </h3>
+
+                    {{-- Description --}}
+                    <p class="text-sm leading-relaxed mb-4 line-clamp-2" style="color: #6b7280 !important;">
+                        {{ $system->description }}
+                    </p>
+
+                    {{-- Footer --}}
+                    <div class="flex items-center justify-between pt-4 border-t border-gray-100">
+                        <span class="text-xs truncate" style="color: #9ca3af !important;">
+                            {{ parse_url($system->url, PHP_URL_HOST) }}
                         </span>
 
-                        {{-- Title --}}
-                        <h3 class="text-lg font-bold mb-2 transition group-hover:opacity-80"
-                            style="color: #1f2937 !important;">
-                            {{ $system->name }}
-                        </h3>
-
-                        {{-- Description --}}
-                        <p class="text-sm leading-relaxed mb-4 line-clamp-2" style="color: #6b7280 !important;">
-                            {{ $system->description }}
-                        </p>
-
-                        {{-- Footer --}}
-                        <div class="flex items-center justify-between pt-4 border-t border-gray-100">
-                            <span class="text-xs truncate" style="color: #9ca3af !important;">
-                                {{ parse_url($system->url, PHP_URL_HOST) }}
+                        {{-- Tampilan Buka / Maintenance --}}
+                        @if ($system->is_maintenance)
+                            <span
+                                class="flex items-center gap-1 text-sm font-bold text-red-500 bg-red-50 px-2 py-1 rounded-md border border-red-100">
+                                <x-heroicon-o-wrench-screwdriver class="w-4 h-4" />
+                                Maintenance
                             </span>
+                        @else
                             <span class="flex items-center gap-1 text-sm font-semibold transition-all group-hover:gap-2"
                                 style="color: {{ $system->color }} !important;">
                                 Buka
@@ -206,28 +223,35 @@
                                         d="M17 8l4 4m0 0l-4 4m4-4H3" />
                                 </svg>
                             </span>
-                        </div>
+                        @endif
                     </div>
-                </a>
-            @endforeach
-        </div>
+                </div>
 
-        {{-- ============================================ --}}
-        {{-- EMPTY STATE --}}
-        {{-- ============================================ --}}
-        <div id="emptyState" class="hidden text-center py-16">
-            <svg class="w-20 h-20 mx-auto mb-4" style="color: #e5e7eb;" fill="none" stroke="currentColor"
-                viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <h3 class="text-lg font-semibold mb-1" style="color: #1f2937 !important;">
-                Sistem tidak ditemukan
-            </h3>
-            <p class="text-sm" style="color: #9ca3af !important;">
-                Coba kata kunci lain atau ubah filter kategori
-            </p>
+                {{-- Penutup Tag --}}
+                @if ($system->is_maintenance)
         </div>
+    @else
+        </a>
+        @endif
+        @endforeach
+    </div>
+
+    {{-- ============================================ --}}
+    {{-- EMPTY STATE --}}
+    {{-- ============================================ --}}
+    <div id="emptyState" class="hidden text-center py-16">
+        <svg class="w-20 h-20 mx-auto mb-4" style="color: #e5e7eb;" fill="none" stroke="currentColor"
+            viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <h3 class="text-lg font-semibold mb-1" style="color: #1f2937 !important;">
+            Sistem tidak ditemukan
+        </h3>
+        <p class="text-sm" style="color: #9ca3af !important;">
+            Coba kata kunci lain atau ubah filter kategori
+        </p>
+    </div>
     </div>
 @endsection
 

@@ -15,13 +15,16 @@ class System extends Model
         'icon',
         'color',
         'category',
+        'allowed_types',
         'is_active',
+        'is_maintenance',
         'order'
     ];
 
     protected $casts = [
         'allowed_types' => 'array',
         'is_active' => 'boolean',
+        'is_maintenance' => 'boolean'
     ];
 
     public function isAccessibleBy(User $user): bool

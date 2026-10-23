@@ -37,12 +37,12 @@
         </div>
     </x-card>
 
-    <x-card title="Hak Akses" subtitle="Tipe user yang boleh mengakses (kosong = semua)">
+    <x-card title="Hak Akses & Status" subtitle="Tipe user yang boleh mengakses dan status sistem">
         @php
             $types = ['mahasiswa', 'dosen', 'staff', 'admin'];
             $selected = old('allowed_types', $system->allowed_types ?? []);
         @endphp
-        <div class="flex flex-wrap gap-3">
+        <div class="flex flex-wrap gap-3 mb-6">
             @foreach ($types as $t)
                 <label class="flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer transition"
                     style="border-color: #e5e7eb !important;" onmouseover="this.style.borderColor='#6B56A5'"
@@ -54,12 +54,33 @@
             @endforeach
         </div>
 
-        <label class="flex items-center gap-2 mt-4">
-            <input type="hidden" name="is_active" value="0">
-            <input type="checkbox" name="is_active" value="1"
-                {{ old('is_active', $system->is_active ?? true) ? 'checked' : '' }} style="accent-color: #6B56A5;">
-            <span class="text-sm font-medium" style="color: #1f2937 !important;">Aktif</span>
-        </label>
+        <div class="grid md:grid-cols-2 gap-4">
+            {{-- Status Aktif --}}
+            <label class="flex items-center gap-3 cursor-pointer p-3 rounded-xl border transition"
+                style="border-color: #e5e7eb !important;">
+                <input type="hidden" name="is_active" value="0">
+                <input type="checkbox" name="is_active" value="1"
+                    {{ old('is_active', $system->is_active ?? true) ? 'checked' : '' }}
+                    style="accent-color: #6B56A5; width: 18px; height: 18px;">
+                <div>
+                    <div class="text-sm font-semibold" style="color: #1f2937 !important;">Status Aktif</div>
+                    <div class="text-xs" style="color: #9ca3af !important;">Sistem tampil di dashboard</div>
+                </div>
+            </label>
+
+            {{-- Mode Maintenance --}}
+            <label class="flex items-center gap-3 cursor-pointer p-3 rounded-xl border transition"
+                style="border-color: #fecaca !important; background-color: #fef2f2 !important;">
+                <input type="hidden" name="is_maintenance" value="0">
+                <input type="checkbox" name="is_maintenance" value="1"
+                    {{ old('is_maintenance', $system->is_maintenance ?? false) ? 'checked' : '' }}
+                    style="accent-color: #dc2626; width: 18px; height: 18px;">
+                <div>
+                    <div class="text-sm font-semibold text-red-700">Mode Maintenance</div>
+                    <div class="text-xs text-red-500">Sistem dikunci (tidak bisa diklik)</div>
+                </div>
+            </label>
+        </div>
     </x-card>
 
     <div class="flex justify-end gap-3">
