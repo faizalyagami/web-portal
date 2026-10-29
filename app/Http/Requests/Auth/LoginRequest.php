@@ -47,8 +47,8 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
-        $login = $this->input('login');
-        $password = $this->input('password');
+        $login = trim((string) $this->input('login'));
+        $password = trim((string) $this->input('password'));
 
         // Deteksi otomatis: email atau identifier (NPM/NIDN/NIK)?
         $field = filter_var($login, FILTER_VALIDATE_EMAIL) ? 'email' : 'identifier';

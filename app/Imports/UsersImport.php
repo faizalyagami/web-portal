@@ -6,11 +6,13 @@ use App\Enums\UserType;
 use App\Models\User;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Validator;
 use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
+use Maatwebsite\Excel\Concerns\WithChunkReading;
+use Maatwebsite\Excel\Concerns\WithBatchInserts;
+use Illuminate\Support\Facades\DB;
 
-class UsersImport implements ToCollection, WithHeadingRow
+class UsersImport implements ToCollection, WithHeadingRow, WithChunkReading, WithBatchInserts
 {
     protected $type;
     protected $successCount = 0;
@@ -20,86 +22,103 @@ class UsersImport implements ToCollection, WithHeadingRow
     public function __construct($type)
     {
         $this->type = $type;
+        set_time_limit(0);
+        ini_set('memory_limit', '512M');
     }
 
     public function collection(Collection $rows)
     {
+        $userType = UserType::from($this->type);
+
+        $emailsInChunk = $rows->pluck('email')->filter()->map(fn($email) => trim((string)$email))->toArray();
+        $existingEmails = User::whereIn('email', $emailsInChunk)->pluck('email')->toArray();
+
+        $identifiersInChunk = [];
+        foreach ($rows as $row) {
+            $rawId = ($this->type === 'mahasiswa' || $this->type === 'admin') ? $row['identifier'] : $row['nik'];
+            if (!empty($rawId)) {
+                $identifiersInChunk[] = trim((string)$rawId);
+            }
+        }
+        $existingIdentifiers = User::whereIn('identifier', $identifiersInChunk)->pluck('identifier')->toArray();
+
+        $dataToInsert = [];
+        $now = now();
+
         foreach ($rows as $index => $row) {
-            // Skip jika baris kosong (nama & email kosong)
-            if (empty($row['name']) && empty($row['email'])) {
-                continue;
-            }
+            $name = isset($row['name']) ? trim((string)$row['name']) : '';
+            $email = isset($row['email']) ? trim((string)$row['email']) : '';
 
-            // Validasi dasar
-            $validator = Validator::make($row->toArray(), [
-                'name' => 'required|string|max:255',
-                'email' => 'required|email|max:255|unique:users,email',
-            ]);
+            if (empty($name) && empty($email)) continue;
 
-            if ($validator->fails()) {
+            if (empty($name) || empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
                 $this->failedCount++;
-                $this->errors[] = "Baris " . ($index + 2) . ": " . implode(', ', $validator->errors()->all());
                 continue;
             }
 
-            $userType = UserType::from($this->type);
+            if (in_array($email, $existingEmails)) {
+                $this->failedCount++;
+                continue;
+            }
 
-            // Siapkan data dasar (password dikosongkan dulu)
-            $data = [
-                'name' => $row['name'],
-                'email' => $row['email'],
-                'user_type' => $userType,
-                'is_active' => true,
-                'fakultas' => $row['fakultas'] ?? null,
-                'program_studi' => $row['program_studi'] ?? null,
-                'jabatan' => $row['jabatan'] ?? null,
-                'angkatan' => $row['angkatan'] ?? null,
-                'phone' => $row['phone'] ?? null,
-            ];
-
-            // Logic Identifier (NPM/NIK)
             $identifier = null;
             if ($this->type === 'mahasiswa' || $this->type === 'admin') {
-                $identifier = $row['identifier'] ?? null;
+                $identifier = isset($row['identifier']) ? trim((string)$row['identifier']) : null;
             } elseif ($this->type === 'dosen' || $this->type === 'staff') {
-                // Dosen dan Staff menggunakan NIK
-                $identifier = $row['nik'] ?? null;
-                $data['nik'] = $row['nik'] ?? null;
-                $data['nidn'] = null; // Pastikan NIDN kosong jika tidak dipakai
+                $identifier = isset($row['nik']) ? trim((string)$row['nik']) : null;
             }
 
-            // Cek unique identifier
-            if (!empty($identifier)) {
-                if (User::where('identifier', $identifier)->exists()) {
-                    $this->failedCount++;
-                    $this->errors[] = "Baris " . ($index + 2) . ": Identifier '{$identifier}' sudah terdaftar.";
-                    continue;
-                }
-                $data['identifier'] = $identifier;
-
-                // ✅ SET PASSWORD DEFAULT MENGGUNAKAN IDENTIFIER (NPM/NIK)
-                $data['password'] = Hash::make($identifier);
-            } else {
-                // Fallback jika identifier kosong
-                $data['password'] = Hash::make('password123');
+            if (!empty($identifier) && in_array($identifier, $existingIdentifiers)) {
+                $this->failedCount++;
+                continue;
             }
 
-            // Simpan ke database
-            User::create($data);
-            $this->successCount++;
+            $password = !empty($identifier) ? $identifier : 'password123';
+
+            $dataToInsert[] = [
+                'name' => $name,
+                'email' => $email,
+                'identifier' => $identifier,
+                'nik' => ($this->type === 'dosen' || $this->type === 'staff') ? $identifier : null,
+                'nidn' => null,
+                'password' => Hash::make($password, ['rounds' => 4]),
+                'user_type' => $userType->value,
+                'is_active' => true,
+                'fakultas' => isset($row['fakultas']) ? trim((string)$row['fakultas']) : null,
+                'program_studi' => isset($row['program_studi']) ? trim((string)$row['program_studi']) : null,
+                'jabatan' => isset($row['jabatan']) ? trim((string)$row['jabatan']) : null,
+                'angkatan' => isset($row['angkatan']) ? trim((string)$row['angkatan']) : null,
+                'phone' => isset($row['phone']) ? trim((string)$row['phone']) : null,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ];
+
+            $existingEmails[] = $email;
+            if ($identifier) $existingIdentifiers[] = $identifier;
+        }
+
+        if (count($dataToInsert) > 0) {
+            DB::table('users')->insert($dataToInsert);
+            $this->successCount += count($dataToInsert);
         }
     }
 
+    public function chunkSize(): int
+    {
+        return 500;
+    }
+    public function batchSize(): int
+    {
+        return 500;
+    }
     public function getSuccessCount()
     {
         return $this->successCount;
     }
-
     public function getFailedCount()
     {
         return $this->failedCount;
     }
-
     public function getErrors()
     {
         return $this->errors;

@@ -110,7 +110,8 @@
                 </p>
             </div>
 
-            <form method="POST" action="{{ route('users.import') }}" enctype="multipart/form-data" class="p-6 space-y-8">
+            <form method="POST" action="{{ route('users.import') }}" enctype="multipart/form-data"
+                class="p-6 space-y-8 x-data="{ isImporting: false }" @submit="isImporting = true"">
                 @csrf
 
                 {{-- Tipe User --}}
@@ -207,22 +208,32 @@
                     @enderror
                 </div>
 
+                {{-- Progress Bar --}}
+                <div id="progressContainer" class="hidden mt-4">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-sm font-semibold" style="color: #6B56A5;">Sedang memproses data...</span>
+                        <span id="progressText" class="text-xs font-bold" style="color: #6B56A5;">0%</span>
+                    </div>
+                    <div class="w-full bg-gray-100 rounded-full h-3 overflow-hidden border border-gray-200">
+                        <div id="progressBar" class="h-3 rounded-full transition-all duration-300 ease-out"
+                            style="background: linear-gradient(90deg, #00A79C, #6B56A5); width: 0%;"></div>
+                    </div>
+                    <p class="text-xs mt-2 text-center" style="color: #9ca3af;">Mohon jangan tutup atau refresh halaman
+                        ini.</p>
+                </div>
 
                 {{-- Actions --}}
                 <div class="flex flex-col sm:flex-row justify-end gap-2 pt-4 border-t border-gray-100">
                     <a href="{{ route('users.index') }}"
                         class="inline-flex items-center justify-center px-5 py-2.5 rounded-xl text-sm font-semibold transition"
-                        style="background: #ffffff !important; color: #6b7280 !important; border: 1.5px solid #e5e7eb;"
-                        onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background='#ffffff'">
+                        style="background: #ffffff !important; color: #6b7280 !important; border: 1.5px solid #e5e7eb;">
                         Batal
                     </a>
-                    <button type="submit"
+                    <button type="submit" id="submitBtn"
                         class="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white transition shadow-md"
-                        style="background: linear-gradient(135deg, #6B56A5, #56438a) !important;"
-                        onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 10px 24px rgba(107, 86, 165, 0.35)';"
-                        onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(107, 86, 165, 0.2)';">
-                        <x-heroicon-o-arrow-up-tray class="w-4 h-4" />
-                        Upload & Import
+                        style="background: linear-gradient(135deg, #6B56A5, #56438a) !important;">
+                        <x-heroicon-o-arrow-up-tray id="btnIcon" class="w-4 h-4" />
+                        <span id="btnText">Upload & Import</span>
                     </button>
                 </div>
             </form>
@@ -356,6 +367,79 @@
                         handleFileSelect(fileInput);
                     }
                 }
+            }
+        });
+
+        document.getElementById('importForm').addEventListener('submit', function(e) {
+            e.preventDefault(); // Mencegah form reload halaman
+
+            const form = e.target;
+            const formData = new FormData(form);
+            const progressContainer = document.getElementById('progressContainer');
+            const progressBar = document.getElementById('progressBar');
+            const progressText = document.getElementById('progressText');
+            const submitBtn = document.getElementById('submitBtn');
+            const btnText = document.getElementById('btnText');
+            const btnIcon = document.getElementById('btnIcon');
+
+            // UI State: Loading
+            progressContainer.classList.remove('hidden');
+            submitBtn.disabled = true;
+            submitBtn.style.opacity = '0.7';
+            btnText.innerText = 'Memproses...';
+            btnIcon.classList.add('animate-spin');
+
+            let progress = 0;
+            // Simulasi progress bar (berjalan lambat hingga 90% sambil menunggu server)
+            const progressInterval = setInterval(() => {
+                if (progress < 90) {
+                    progress += (90 - progress) * 0.05; // Melambat saat mendekati 90%
+                    progressBar.style.width = progress + '%';
+                    progressText.innerText = Math.round(progress) + '%';
+                }
+            }, 100);
+
+            // Kirim data via AJAX
+            fetch(form.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    clearInterval(progressInterval);
+
+                    if (data.success) {
+                        // Selesai 100%
+                        progressBar.style.width = '100%';
+                        progressText.innerText = '100%';
+
+                        setTimeout(() => {
+                            window.location.href = data.redirect;
+                        }, 800);
+                    } else {
+                        alert('Error: ' + data.message);
+                        resetUI();
+                    }
+                })
+                .catch(error => {
+                    clearInterval(progressInterval);
+                    alert('Terjadi kesalahan sistem saat memproses file.');
+                    resetUI();
+                });
+
+            function resetUI() {
+                progressContainer.classList.add('hidden');
+                progressBar.style.width = '0%';
+                progressText.innerText = '0%';
+                submitBtn.disabled = false;
+                submitBtn.style.opacity = '1';
+                btnText.innerText = 'Upload & Import';
+                btnIcon.classList.remove('animate-spin');
             }
         });
 
