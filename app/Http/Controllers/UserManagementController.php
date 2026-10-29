@@ -15,6 +15,7 @@ use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use Maatwebsite\Excel\Facades\Excel;
+use Illuminate\Http\JsonResponse;
 
 class UserManagementController extends Controller
 {
@@ -58,7 +59,7 @@ class UserManagementController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $validated = $this->validateUser($request);
-        $validated['password'] = Hash::make($request->password ?? 'password123');
+        $validated['password'] = $request->password ?? $validated['identifier'] ?? 'password123';
         $validated['user_type'] = UserType::from($validated['user_type']);
 
         $user = User::create($validated);
@@ -89,7 +90,7 @@ class UserManagementController extends Controller
         $validated['user_type'] = UserType::from($validated['user_type']);
 
         if ($request->filled('password')) {
-            $validated['password'] = Hash::make($request->password);
+            $validated['password'] = $request->password;
         }
 
         $user->update($validated);
@@ -120,7 +121,7 @@ class UserManagementController extends Controller
     public function resetPassword(User $user): RedirectResponse
     {
         $newPassword = Str::random(10);
-        $user->update(['password' => Hash::make($newPassword)]);
+        $user->update(['password' => $newPassword]);
 
         return back()->with('success', "Password baru: {$newPassword}");
     }
@@ -154,7 +155,7 @@ class UserManagementController extends Controller
         return view('users.import', ['types' => UserType::cases()]);
     }
 
-    public function import(Request $request): RedirectResponse
+    public function import(Request $request)
     {
         $request->validate([
             'file' => ['required', 'file', 'mimes:xlsx,xls,csv', 'max:5120'],
@@ -170,16 +171,33 @@ class UserManagementController extends Controller
             $failed = $import->getFailedCount();
             $errors = $import->getErrors();
 
+            // JIKA REQUEST DARI AJAX (Progress Bar)
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => "{$success} user berhasil diimport." . ($failed > 0 ? " {$failed} gagal." : ""),
+                    'redirect' => route('users.index')
+                ]);
+            }
+
+            // JIKA REQUEST FORM BIASA
             if ($failed > 0) {
                 $errorMsg = "{$success} user berhasil diimport. {$failed} gagal: <br>" . implode('<br>', array_slice($errors, 0, 5));
                 if (count($errors) > 5) $errorMsg .= '<br>...dan lainnya.';
-
                 return redirect()->route('users.index')->with('error', $errorMsg);
             }
 
             return redirect()->route('users.index')
                 ->with('success', "{$success} user berhasil diimport.");
         } catch (\Exception $e) {
+            // JIKA REQUEST DARI AJAX DAN GAGAL
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Gagal memproses file: ' . $e->getMessage()
+                ], 500);
+            }
+
             return back()->with('error', 'Gagal memproses file: ' . $e->getMessage());
         }
     }
